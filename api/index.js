@@ -30,7 +30,7 @@ Siempre debes describir la imagen en INGLÃ‰S dentro de la etiqueta [IMAGE: ..
 const chatHistory = new Map();
 
 // Capturar cualquier ruta y cualquier mÃ©todo (GET/POST) para evitar errores si el usuario pegÃ³ mal la URL en Twilio
-app.all('*', async (req, res) => {
+app.use(async (req, res) => {
     const incomingText = req.body.Body ? req.body.Body.trim() : "";
     const sender = req.body.From;
     const mediaUrl = req.body.MediaUrl0;
