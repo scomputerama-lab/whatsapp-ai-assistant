@@ -108,7 +108,7 @@ app.post('/api/webhook', async (req, res) => {
 
     } catch (error) {
         console.error('Error procesando mensaje:', error);
-        message.body('Lo siento, tuve un problema interno al procesar tu solicitud. Por favor, vuelve a intentarlo. ðŸ”„');
+        message.body('Lo siento, tuve un problema: ' + error.message);
     }
 
     res.writeHead(200, { 'Content-Type': 'text/xml' });
