@@ -48,14 +48,7 @@ app.post('/api/webhook', async (req, res) => {
             return res.end(twiml.toString());
         }
 
-        // Iniciar chat si no existe
-        if (!chatHistory.has(sender)) {
-            chatHistory.set(sender, model.startChat({ history: [] }));
-        }
-
-        const chat = chatHistory.get(sender);
-        
-        // Preparar el mensaje para Gemini
+        // Preparar el mensaje para Gemini (Completamente Stateless para evitar bloqueos en Vercel)
         let geminiInput = [];
         
         // Si hay archivo multimedia (Audio, Imagen, etc)
@@ -83,15 +76,16 @@ app.post('/api/webhook', async (req, res) => {
         if (incomingText) {
             geminiInput.push(incomingText);
         } else if (mediaUrl && mediaType.startsWith('audio/')) {
-            // Si es solo audio sin texto, decirle a Gemini que escuche
             geminiInput.push("Escucha atentamente este audio y responde acorde a lo que digo.");
         } else if (mediaUrl && mediaType.startsWith('image/')) {
             geminiInput.push("Describe o analiza esta imagen.");
         }
 
-        // Enviar mensaje a Gemini
-        const result = await chat.sendMessage(geminiInput);
+        console.log("Enviando a Gemini...");
+        // Usar generateContent en lugar de startChat para evitar sockets colgados en Serverless
+        const result = await model.generateContent(geminiInput);
         const responseText = result.response.text();
+        console.log("Respuesta recibida de Gemini.");
 
         // Buscar si Gemini decidiÃ³ generar una imagen
         const imageRegex = /\[IMAGE:\s*(.*?)\]/i;
@@ -114,9 +108,7 @@ app.post('/api/webhook', async (req, res) => {
 
     } catch (error) {
         console.error('Error procesando mensaje:', error);
-        // Si la conversaciÃ³n se corrompiÃ³ o hubo un error crÃ­tico, reiniciarla.
-        chatHistory.delete(sender);
-        message.body('Lo siento, tuve un problema interno al procesar tu solicitud, pero ya he reiniciado mi sistema. Por favor, vuelve a intentarlo. ðŸ”„');
+        message.body('Lo siento, tuve un problema interno al procesar tu solicitud. Por favor, vuelve a intentarlo. ðŸ”„');
     }
 
     res.writeHead(200, { 'Content-Type': 'text/xml' });
