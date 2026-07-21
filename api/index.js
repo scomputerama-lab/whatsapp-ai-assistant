@@ -29,8 +29,7 @@ Siempre debes describir la imagen en INGLÃ‰S dentro de la etiqueta [IMAGE: ..
 // Almacenar el historial bÃ¡sico de conversaciÃ³n en memoria (solo para pruebas)
 const chatHistory = new Map();
 
-// Capturar cualquier ruta y cualquier mÃ©todo (GET/POST) para evitar errores si el usuario pegÃ³ mal la URL en Twilio
-app.use(async (req, res) => {
+app.post('/api/webhook', async (req, res) => {
     const incomingText = req.body.Body ? req.body.Body.trim() : "";
     const sender = req.body.From;
     const mediaUrl = req.body.MediaUrl0;
@@ -121,6 +120,10 @@ app.use(async (req, res) => {
 
     res.writeHead(200, { 'Content-Type': 'text/xml' });
     res.end(twiml.toString());
+});
+
+app.get('/api', (req, res) => {
+    res.send('El servidor de WhatsApp AI Assistant estÃ¡ funcionando correctamente con soporte de Audio.');
 });
 
 // Exportar la aplicaciÃ³n para Vercel
