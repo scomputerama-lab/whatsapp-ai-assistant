@@ -9,7 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 // ConfiguraciÃ³n de Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ 
-    model: 'gemini-flash-latest',
+    model: 'gemini-2.5-flash',
     generationConfig: {
         maxOutputTokens: 300, // Limitar a ~250 palabras para ser ultra rÃ¡pido y no dar Timeout en Twilio
     },
