@@ -29,7 +29,8 @@ Siempre debes describir la imagen en INGLÃ‰S dentro de la etiqueta [IMAGE: ..
 // Almacenar el historial bÃ¡sico de conversaciÃ³n en memoria (solo para pruebas)
 const chatHistory = new Map();
 
-app.post('/api/webhook', async (req, res) => {
+// Capturar cualquier ruta y cualquier mÃ©todo (GET/POST) para evitar errores si el usuario pegÃ³ mal la URL en Twilio
+app.all('*', async (req, res) => {
     const incomingText = req.body.Body ? req.body.Body.trim() : "";
     const sender = req.body.From;
     const mediaUrl = req.body.MediaUrl0;
@@ -39,6 +40,11 @@ app.post('/api/webhook', async (req, res) => {
 
     const twiml = new MessagingResponse();
     const message = twiml.message();
+
+    // Si es un GET simple (ping) y no viene de WhatsApp
+    if (!sender && req.method === 'GET') {
+        return res.send('El servidor de WhatsApp AI Assistant estÃ¡ funcionando correctamente. Twilio debe apuntar aquÃ­ por POST.');
+    }
 
     try {
         // Ignorar mensajes completamente vacÃ­os (sin texto y sin media)
@@ -75,10 +81,12 @@ app.post('/api/webhook', async (req, res) => {
 
         if (incomingText) {
             geminiInput.push(incomingText);
-        } else if (mediaUrl && mediaType.startsWith('audio/')) {
+        } else if (mediaUrl && mediaType && mediaType.startsWith('audio/')) {
             geminiInput.push("Escucha atentamente este audio y responde acorde a lo que digo.");
-        } else if (mediaUrl && mediaType.startsWith('image/')) {
+        } else if (mediaUrl && mediaType && mediaType.startsWith('image/')) {
             geminiInput.push("Describe o analiza esta imagen.");
+        } else {
+            geminiInput.push("Analiza este archivo.");
         }
 
         console.log("Enviando a Gemini...");
@@ -113,10 +121,6 @@ app.post('/api/webhook', async (req, res) => {
 
     res.writeHead(200, { 'Content-Type': 'text/xml' });
     res.end(twiml.toString());
-});
-
-app.get('/api', (req, res) => {
-    res.send('El servidor de WhatsApp AI Assistant estÃ¡ funcionando correctamente con soporte de Audio.');
 });
 
 // Exportar la aplicaciÃ³n para Vercel
