@@ -10,7 +10,12 @@ app.use(express.urlencoded({ extended: true }));
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ 
     model: 'gemini-flash-latest',
-    systemInstruction: `Eres un asistente virtual avanzado en WhatsApp. Eres amigable, Ãºtil y directo.
+    generationConfig: {
+        maxOutputTokens: 300, // Limitar a ~250 palabras para ser ultra rÃ¡pido y no dar Timeout en Twilio
+    },
+    systemInstruction: `Eres un asistente virtual avanzado en WhatsApp. Eres amigable y sumamente DIRECTO.
+Tus respuestas deben ser CORTAS Y CONCISAS (mÃ¡ximo 2 o 3 pÃ¡rrafos cortos). NUNCA des respuestas largas porque el servidor cortarÃ¡ la conexiÃ³n por lÃ­mite de tiempo.
+Si el usuario te pide una receta o explicaciÃ³n, dÃ¡sela resumida y ve directo al grano.
 Si el usuario te pide que generes, dibujes, crees o imagines una imagen/foto, DEBES incluir en tu respuesta la siguiente etiqueta exacta:
 [IMAGE: <descripcion detallada en ingles de lo que quieres generar>]
 
